@@ -42,8 +42,8 @@ A lightweight, client-side data visualization tool that allows users to upload C
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/data-viz-app.git
-cd data-viz-app
+git clone https://github.com/yourusername/data-viewer.git
+cd data-viewer
 ```
 
 2. Install dependencies:
@@ -134,10 +134,6 @@ Contributions are welcome! Please follow these steps:
 4. Push to the branch: `git push origin feature/amazing-feature`
 5. Open a Pull Request
 
-## 📝 License
-
-MIT License - feel free to use this project for personal or commercial purposes.
-
 ## 🙏 Acknowledgments
 
 - [Recharts](https://recharts.org/) for beautiful React charts
@@ -148,7 +144,3 @@ MIT License - feel free to use this project for personal or commercial purposes.
 ## 📧 Contact
 
 For questions or feedback, please open an issue on GitHub.
-
----
-
-Built with ❤️ using React, TypeScript, and Vite
