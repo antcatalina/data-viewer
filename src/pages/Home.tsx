@@ -1,3 +1,6 @@
+// Updated responsive & enhanced Home component
+// Focus: mobile-first typography, spacing, chart responsiveness, accessibility tweaks
+
 import React, { useState } from "react";
 import {
   LineChart,
@@ -13,10 +16,17 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { Upload, TrendingUp, BarChart3, Slice } from "lucide-react";
+import {
+  Upload,
+  TrendingUp,
+  BarChart3,
+  PieChart as PieIcon,
+} from "lucide-react";
+import Loading from "./Loading";
 
 const Home = (): React.ReactElement => {
   const [dragActive, setDragActive] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   /** Data set for line chart example */
   const lineData = [
@@ -44,222 +54,167 @@ const Home = (): React.ReactElement => {
     { name: "Sales", value: 15, color: "#10b981" },
   ];
 
-  
   /** Drag handler */
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    setDragActive(e.type === "dragenter" || e.type === "dragover");
   };
-  
+
   /** Drop handler */
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    if (e.dataTransfer.files?.[0]) {
       console.log("File dropped:", e.dataTransfer.files[0].name);
     }
   };
 
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e?.target?.files?.[0]) {
+      console.log("File selected:", e.target.files[0].name);
+      setIsLoading(true);
+    }
+  };
+  /** Props for dark tooltip */
+  const darkTooltipProps = {
+    contentStyle: {
+      backgroundColor: "#1e293b",
+      border: "1px solid #475569",
+      borderRadius: "8px",
+    },
+    labelStyle: { color: "#e5e7eb" },
+    itemStyle: { color: "#e5e7eb" },
+  };
+
+  if (isLoading) {
+    return <Loading />;
+  }
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      {/* Hero Section */}
-      <div className="container mx-auto px-6 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-6xl font-bold text-white mb-4 tracking-tight">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        {/* Hero */}
+        <div className="text-center mb-12 sm:mb-16">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight">
             Transform Your Data Into
-            <span className="block bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent mt-2">
+            <span className="block mt-2 bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
               Beautiful Insights
             </span>
           </h1>
-          <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-8">
-            Upload CSV or Excel files and instantly visualize your data with
-            stunning, interactive charts. No coding required.
+          <p className="mt-6 text-base sm:text-lg text-gray-300 max-w-xl mx-auto">
+            Upload CSV or Excel files and instantly visualize your data — no
+            coding, formulas, or setup required.
           </p>
         </div>
 
-        {/* Upload Section */}
-        <div className="max-w-2xl mx-auto mb-20">
+        {/* Upload */}
+        <div className="max-w-xl mx-auto mb-16">
           <div
-            className={`relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
+            className={`relative border-2 border-dashed rounded-xl p-8 sm:p-12 text-center transition-all duration-300 ${
               dragActive
-                ? "border-purple-400 bg-purple-900/20 scale-105"
-                : "border-gray-600 bg-slate-800/50 hover:border-purple-500 hover:bg-slate-800/70"
+                ? "border-purple-400 bg-purple-900/20"
+                : "border-gray-600 bg-slate-800/60 hover:border-purple-500"
             }`}
             onDragEnter={handleDrag}
             onDragLeave={handleDrag}
             onDragOver={handleDrag}
             onDrop={handleDrop}
           >
-            <Upload className="w-16 h-16 mx-auto mb-4 text-purple-400" />
-            <h3 className="text-2xl font-semibold text-white mb-2">
+            <Upload className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-purple-400" />
+            <h3 className="text-xl sm:text-2xl font-semibold text-white">
               Drop your file here
             </h3>
-            <p className="text-gray-400 mb-6">or click to browse</p>
+            <p className="text-gray-400 mt-2">or tap to browse</p>
             <input
               type="file"
               accept=".csv,.xlsx,.xls"
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                e.target.files
-                  ? console.log("File selected:", e.target.files[0]?.name)
-                  : null;
-              }}
+              onChange={handleFileInput}
             />
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
-              <span>CSV</span>
-              <span>•</span>{" "}
-              <span>Excel</span>{" "}
-              <span>•</span>{" "}
-              <span>Up to 10MB</span>
+            <div className="mt-4 flex flex-wrap justify-center gap-2 text-xs text-gray-500">
+              <span>CSV</span>•<span>Excel</span>•<span>10MB max</span>
             </div>
           </div>
         </div>
 
-        {/* Features Headline */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold text-white mb-4">
-            See Your Data Come to Life
-          </h2>
-          <p className="text-lg text-gray-400">
-            Choose from multiple chart types to tell your data story
-          </p>
-        </div>
-
-        {/* Chart Examples */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {/* Line Chart Card */}
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700 hover:border-purple-500 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-purple-500/20 rounded-lg">
-                <TrendingUp className="w-6 h-6 text-purple-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white">
-                Trend Analysis
-              </h3>
-            </div>
-            <p className="text-gray-400 text-sm mb-6">
-              Track changes over time with smooth, animated line charts. Perfect
-              for revenue, growth metrics, and time-series data.
-            </p>
+        {/* Charts */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* Line */}
+          <ChartCard
+            title="Trend Analysis"
+            icon={<TrendingUp className="w-5 h-5 text-purple-400" />}
+            description="Understand growth and changes over time."
+          >
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={lineData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="month" stroke="#9ca3af" />
                 <YAxis stroke="#9ca3af" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #475569",
-                    borderRadius: "8px",
-                  }}
-                  labelStyle={{ color: "#e5e7eb" }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="revenue"
-                  stroke="#8b5cf6"
-                  strokeWidth={3}
-                  dot={{ fill: "#8b5cf6", r: 4 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="users"
-                  stroke="#3b82f6"
-                  strokeWidth={3}
-                  dot={{ fill: "#3b82f6", r: 4 }}
-                />
+                <Tooltip {...darkTooltipProps} />
+                <Line dataKey="revenue" stroke="#8b5cf6" strokeWidth={3} />
+                <Line dataKey="users" stroke="#3b82f6" strokeWidth={3} />
               </LineChart>
             </ResponsiveContainer>
-          </div>
+          </ChartCard>
 
-          {/* Bar Chart Card */}
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700 hover:border-cyan-500 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-cyan-500/20 rounded-lg">
-                <BarChart3 className="w-6 h-6 text-cyan-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white">Comparisons</h3>
-            </div>
-            <p className="text-gray-400 text-sm mb-6">
-              Compare categories side-by-side with vibrant bar charts. Ideal for
-              regional data, product performance, and rankings.
-            </p>
+          {/* Bar */}
+          <ChartCard
+            title="Comparisons"
+            icon={<BarChart3 className="w-5 h-5 text-cyan-400" />}
+            description="Compare values across categories."
+          >
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={barData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                 <XAxis dataKey="category" stroke="#9ca3af" />
                 <YAxis stroke="#9ca3af" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #475569",
-                    borderRadius: "8px",
-                  }}
-                  labelStyle={{ color: "#e5e7eb" }}
-                />
-                <Bar dataKey="sales" fill="#06b6d4" radius={[8, 8, 0, 0]} />
+                <Tooltip {...darkTooltipProps} />
+                <Bar dataKey="sales" fill="#06b6d4" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
+          </ChartCard>
 
-          {/* Pie Chart Card */}
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-slate-700 hover:border-emerald-500 transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-emerald-500/20">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <Slice className="w-6 h-6 text-emerald-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white">Proportions</h3>
-            </div>
-            <p className="text-gray-400 text-sm mb-6">
-              Visualize parts of a whole with colorful pie charts. Great for
-              budget breakdowns, market share, and distributions.
-            </p>
+          {/* Pie */}
+          <ChartCard
+            title="Proportions"
+            icon={<PieIcon className="w-5 h-5 text-emerald-400" />}
+            description="See how parts contribute to the whole."
+          >
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={50}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                <Pie data={pieData} dataKey="value" outerRadius={80}>
+                  {pieData.map((e, i) => (
+                    <Cell key={i} fill={e.color} />
                   ))}
                 </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#1e293b",
-                    border: "1px solid #475569",
-                    borderRadius: "8px",
-                  }}
-                  labelStyle={{ color: "#e5e7eb" }}
-                />
+                <Tooltip {...darkTooltipProps} />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          </ChartCard>
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center mt-20">
-          <button className="bg-gradient-to-r from-purple-500 to-cyan-500 text-white px-8 py-4 rounded-full text-lg font-semibold hover:shadow-2xl hover:shadow-purple-500/50 transition-all duration-300 hover:scale-105">
+        {/* CTA */}
+        <div className="text-center mt-16">
+          <button className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 px-6 py-3 text-base sm:text-lg font-semibold text-white hover:scale-105 transition">
             Get Started Free
           </button>
-          <p className="text-gray-400 mt-4">
-            No credit card required • Instant setup
-          </p>
+          <p className="text-gray-400 text-sm mt-3">No credit card required</p>
         </div>
       </div>
     </div>
   );
 };
+
+const ChartCard = ({ title, icon, description, children }: any) => (
+  <div className="bg-slate-800/60 rounded-xl border border-slate-700 p-5 sm:p-6 hover:border-purple-500 transition">
+    <div className="flex items-center gap-3 mb-2">
+      <div className="p-2 bg-white/5 rounded-lg">{icon}</div>
+      <h3 className="text-lg font-semibold text-white">{title}</h3>
+    </div>
+    <p className="text-gray-400 text-sm mb-4">{description}</p>
+    {children}
+  </div>
+);
 
 export default Home;
