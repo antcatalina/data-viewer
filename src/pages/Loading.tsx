@@ -25,10 +25,15 @@ const slides = [
   },
 ];
 
-const Loading = (): React.ReactElement => {
+interface LoadingProps {
+  onFinish?: () => void; // optional callback when loading is done
+}
+
+const Loading: React.FC<LoadingProps> = ({ onFinish }) => {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    // Slide rotation
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % slides.length);
     }, 2500);
@@ -36,12 +41,20 @@ const Loading = (): React.ReactElement => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    // Minimum loading time of 3 seconds
+    const timer = setTimeout(() => {
+      if (onFinish) onFinish();
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onFinish]);
+
   const SlideIcon = slides[index].icon;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 px-4">
       <div className="w-full max-w-md text-center bg-slate-800/60 border border-slate-700 rounded-2xl p-8 shadow-2xl">
-        {/* Main Icon */}
         <div className="flex justify-center mb-6">
           <BarChart3 className="w-12 h-12 text-purple-400" />
         </div>
@@ -53,7 +66,6 @@ const Loading = (): React.ReactElement => {
           Analyzing your data and preparing visualizations…
         </p>
 
-        {/* Animated Slide Card */}
         <div className="relative h-28 mb-6">
           <div
             key={index}
@@ -67,7 +79,6 @@ const Loading = (): React.ReactElement => {
           </div>
         </div>
 
-        {/* Fake progress */}
         <div className="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
           <div className="h-full bg-gradient-to-r from-purple-500 to-cyan-500 animate-pulse" />
         </div>

@@ -22,11 +22,18 @@ import {
   BarChart3,
   PieChart as PieIcon,
 } from "lucide-react";
+import { useParsedData } from "../hooks/useParsedData";
+import Results from "./Results";
+
 import Loading from "./Loading";
 
 const Home = (): React.ReactElement => {
   const [dragActive, setDragActive] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
+  const [loadingDone, setLoadingDone] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+
+  const { data, suggestion, error } = useParsedData(file);
 
   /** Data set for line chart example */
   const lineData = [
@@ -61,22 +68,37 @@ const Home = (): React.ReactElement => {
     setDragActive(e.type === "dragenter" || e.type === "dragover");
   };
 
-  /** Drop handler */
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      setShowLoading(true); // start loader
+
+      // Minimum loader time of 3s
+      setTimeout(() => {
+        setLoadingDone(true);
+      }, 3000);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
     if (e.dataTransfer.files?.[0]) {
-      console.log("File dropped:", e.dataTransfer.files[0].name);
+      const droppedFile = e.dataTransfer.files[0];
+      console.log("File dropped:", droppedFile.name);
+      setFile(droppedFile);
+      setShowLoading(true);
     }
   };
 
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e?.target?.files?.[0]) {
-      console.log("File selected:", e.target.files[0].name);
-      setIsLoading(true);
-    }
+  const handleReset = () => {
+    setFile(null);
+    setShowLoading(false);
+    setLoadingDone(false);
   };
+
   /** Props for dark tooltip */
   const darkTooltipProps = {
     contentStyle: {
@@ -88,9 +110,25 @@ const Home = (): React.ReactElement => {
     itemStyle: { color: "#e5e7eb" },
   };
 
-  if (isLoading) {
-    return <Loading />;
+  // Show loader while file uploaded and minimum 3s not done
+  if (showLoading && !loadingDone) {
+    return <Loading onFinish={() => setLoadingDone(true)} />;
   }
+
+  // Show results only after loader finished AND data available
+  if (loadingDone && file && data && suggestion) {
+    return <Results data={data} suggestion={suggestion} onBack={handleReset} />;
+  }
+
+  // Show error if loader done but data failed
+  if (loadingDone && error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500">
+        Error parsing file: {error}
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
